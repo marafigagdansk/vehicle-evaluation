@@ -1,22 +1,14 @@
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-// Classe que representa um veículo no sistema.
-// Além dos dados básicos, agora armazena o e-mail do usuário dono do carro
-// e os dados de avaliação feita pelo administrador.
 public class Veiculo {
 
-    // Atributos privados: encapsulamento dos dados do veículo.
     private String nome;
     private String marca;
     private int anoFabricacao;
     private BigDecimal valor;
     private String detalhesTecnicos;
-
-    // E-mail do usuário que cadastrou este veículo.
     private String emailUsuario;
-
-    // Dados de avaliação do administrador (null enquanto não avaliado).
     private BigDecimal valorAvaliado;
     private String raridade;
 
@@ -29,12 +21,10 @@ public class Veiculo {
         this.valor = valor;
         this.detalhesTecnicos = detalhesTecnicos;
         this.emailUsuario = emailUsuario;
-        // Avaliação começa como null (ainda não avaliado pelo admin).
         this.valorAvaliado = null;
         this.raridade = null;
     }
 
-    // Getters dos dados básicos do veículo.
     public String getNome() {
         return nome;
     }
@@ -59,7 +49,6 @@ public class Veiculo {
         return emailUsuario;
     }
 
-    // Setters dos dados básicos do veículo.
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -80,7 +69,6 @@ public class Veiculo {
         this.detalhesTecnicos = detalhesTecnicos;
     }
 
-    // Getters e Setters dos dados de avaliação do administrador.
     public BigDecimal getValorAvaliado() {
         return valorAvaliado;
     }

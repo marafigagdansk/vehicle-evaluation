@@ -1,20 +1,18 @@
-// Classe que representa um usuário comum do sistema.
-// Usuários são criados pelo administrador e podem cadastrar veículos.
 public class Usuario {
 
-    // Atributos privados: encapsulamento dos dados do usuário.
     private String nome;
     private String email;
     private String senha;
+    private boolean primeiroLogin;
 
     // Construtor: cria um usuário com nome, e-mail e senha.
     public Usuario(String nome, String email, String senha) {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
+        this.primeiroLogin = true;
     }
 
-    // Getters: permitem ler os atributos de fora da classe.
     public String getNome() {
         return nome;
     }
@@ -27,7 +25,10 @@ public class Usuario {
         return senha;
     }
 
-    // Setters: permitem alterar os atributos de fora da classe.
+    public boolean isPrimeiroLogin() {
+        return primeiroLogin;
+    }
+
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -38,5 +39,9 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public void setPrimeiroLogin(boolean primeiroLogin) {
+        this.primeiroLogin = primeiroLogin;
     }
 }

@@ -3,29 +3,14 @@ import java.time.Year;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-// Classe principal do programa.
-// Contém o fluxo de login (Admin/Usuário) e todos os menus do sistema.
 public class Main {
 
-    // Scanner compartilhado para leitura de entradas do terminal.
     private static final Scanner scanner = new Scanner(System.in);
-
-    // Lista global de veículos (cada veículo sabe a qual usuário pertence).
     private static final ArrayList<Veiculo> veiculos = new ArrayList<>();
-
-    // Lista de usuários criados pelo administrador.
     private static final ArrayList<Usuario> usuarios = new ArrayList<>();
-
-    // Credenciais fixas do administrador.
     private static final String ADMIN_LOGIN = "admin";
-    private static final String ADMIN_SENHA  = "admin123";
-
-    // Número máximo de tentativas de login antes de voltar ao menu inicial.
+    private static final String ADMIN_SENHA = "admin123";
     private static final int MAX_TENTATIVAS_LOGIN = 3;
-
-    // =========================================================================
-    // PONTO DE ENTRADA
-    // =========================================================================
 
     public static void main(String[] args) {
         int opcao;
@@ -36,11 +21,9 @@ public class Main {
 
             switch (opcao) {
                 case 1:
-                    // Fluxo de login do administrador.
                     fazerLoginAdmin();
                     break;
                 case 2:
-                    // Fluxo de login do usuário comum.
                     fazerLoginUsuario();
                     break;
                 case 3:
@@ -56,7 +39,7 @@ public class Main {
         scanner.close();
     }
 
-    // Exibe a tela inicial de escolha de perfil.
+    // Tela Inicial cabecalho
     private static void mostrarTelaInicial() {
         mostrarCabecalho("SISTEMA DE CADASTRO DE VEÍCULOS");
         System.out.println("1. Entrar como Administrador");
@@ -65,19 +48,26 @@ public class Main {
         System.out.println("=".repeat(50));
     }
 
-    // =========================================================================
-    // LOGIN DO ADMINISTRADOR
-    // =========================================================================
-
-    // Realiza até MAX_TENTATIVAS_LOGIN tentativas de login como admin.
+    // Funcao de login admin sem uso de case
     private static void fazerLoginAdmin() {
-        mostrarCabecalho("LOGIN — ADMINISTRADOR");
+        mostrarCabecalho("LOGIN - ADMINISTRADOR");
 
         for (int tentativa = 1; tentativa <= MAX_TENTATIVAS_LOGIN; tentativa++) {
-            System.out.print("Login: ");
+            System.out.print("Login (ou digite 'voltar' para cancelar): ");
             String login = scanner.nextLine().trim();
-            System.out.print("Senha: ");
+
+            if (login.isEmpty() || login.equalsIgnoreCase("voltar")) {
+                System.out.println("Login cancelado. Voltando ao menu inicial...");
+                return;
+            }
+
+            System.out.print("Senha (ou digite 'voltar' para cancelar): ");
             String senha = scanner.nextLine().trim();
+
+            if (senha.equalsIgnoreCase("voltar")) {
+                System.out.println("Login cancelado. Voltando ao menu inicial...");
+                return;
+            }
 
             if (login.equals(ADMIN_LOGIN) && senha.equals(ADMIN_SENHA)) {
                 System.out.println("Login realizado com sucesso!");
@@ -94,13 +84,9 @@ public class Main {
         }
     }
 
-    // =========================================================================
-    // LOGIN DO USUÁRIO COMUM
-    // =========================================================================
-
-    // Realiza até MAX_TENTATIVAS_LOGIN tentativas de login como usuário.
+    // Funcao de login usuario sem case
     private static void fazerLoginUsuario() {
-        mostrarCabecalho("LOGIN — USUÁRIO");
+        mostrarCabecalho("LOGIN - USUÁRIO");
 
         if (usuarios.isEmpty()) {
             System.out.println("Nenhum usuário cadastrado. Solicite ao administrador que crie seu acesso.");
@@ -108,15 +94,31 @@ public class Main {
         }
 
         for (int tentativa = 1; tentativa <= MAX_TENTATIVAS_LOGIN; tentativa++) {
-            System.out.print("E-mail: ");
+            System.out.print("E-mail (ou digite 'voltar' para cancelar): ");
             String email = scanner.nextLine().trim();
-            System.out.print("Senha: ");
+
+            if (email.isEmpty() || email.equalsIgnoreCase("voltar")) {
+                System.out.println("Login cancelado. Voltando ao menu inicial...");
+                return;
+            }
+
+            System.out.print("Senha (ou digite 'voltar' para cancelar): ");
             String senha = scanner.nextLine().trim();
+
+            if (senha.equalsIgnoreCase("voltar")) {
+                System.out.println("Login cancelado. Voltando ao menu inicial...");
+                return;
+            }
 
             Usuario encontrado = buscarUsuarioPorCredenciais(email, senha);
 
             if (encontrado != null) {
                 System.out.println("Bem-vindo(a), " + encontrado.getNome() + "!");
+
+                if (encontrado.isPrimeiroLogin()) {
+                    solicitarNovaSenhaPrimeiroLogin(encontrado);
+                }
+
                 menuUsuario(encontrado);
                 return;
             }
@@ -130,7 +132,7 @@ public class Main {
         }
     }
 
-    // Busca um usuário pelo e-mail e senha. Retorna null se não encontrado.
+    // funcao buscar conta usuario
     private static Usuario buscarUsuarioPorCredenciais(String email, String senha) {
         for (Usuario u : usuarios) {
             if (u.getEmail().equalsIgnoreCase(email) && u.getSenha().equals(senha)) {
@@ -140,11 +142,27 @@ public class Main {
         return null;
     }
 
-    // =========================================================================
-    // MENU DO ADMINISTRADOR
-    // =========================================================================
+    // funcao alteracao senha primeiro login
+    private static void solicitarNovaSenhaPrimeiroLogin(Usuario usuario) {
+        mostrarCabecalho("ALTERAÇÃO DE SENHA OBRIGATÓRIA - PRIMEIRO ACESSO");
+        System.out.println("Por segurança, você deve alterar a senha provisória do seu primeiro acesso.");
 
-    // Exibe o menu do admin e processa as opções escolhidas.
+        while (true) {
+            String novaSenha = lerTextoObrigatorio("Digite sua nova senha: ");
+            String confirmacao = lerTextoObrigatorio("Confirme sua nova senha: ");
+
+            if (novaSenha.equals(confirmacao)) {
+                usuario.setSenha(novaSenha);
+                usuario.setPrimeiroLogin(false);
+                System.out.println("Senha updated com sucesso!");
+                break;
+            } else {
+                System.out.println("Erro: as senhas digitadas não coincidem. Tente novamente.");
+            }
+        }
+    }
+
+    // funcao redicioramento telas admin
     private static void menuAdmin() {
         int opcao;
 
@@ -170,7 +188,7 @@ public class Main {
         } while (opcao != 3);
     }
 
-    // Exibe o cabeçalho do menu do administrador.
+    // Exibe o cabeçalho do menu do administrador
     private static void mostrarMenuAdmin() {
         mostrarCabecalho("PAINEL DO ADMINISTRADOR");
         System.out.println("1. Cadastrar novo usuário");
@@ -179,11 +197,11 @@ public class Main {
         System.out.println("=".repeat(50));
     }
 
-    // Cadastra um novo usuário no sistema.
+    // funcao cadastro usario do admin
     private static void cadastrarUsuario() {
         mostrarCabecalho("CADASTRO DE NOVO USUÁRIO");
 
-        String nome  = lerTextoObrigatorio("Nome: ");
+        String nome = lerTextoObrigatorio("Nome: ");
         String email = lerEmailValido("E-mail: ");
         String senha = lerTextoObrigatorio("Senha: ");
 
@@ -193,7 +211,7 @@ public class Main {
         System.out.println("E-mail: " + email);
     }
 
-    // Valida o e-mail: não pode ser vazio, deve conter @ e não pode já existir.
+    // funcao validacao e mascara email
     private static String lerEmailValido(String mensagem) {
         while (true) {
             System.out.print(mensagem);
@@ -209,7 +227,6 @@ public class Main {
                 continue;
             }
 
-            // Verifica se o e-mail já está em uso.
             boolean emUso = false;
             for (Usuario u : usuarios) {
                 if (u.getEmail().equalsIgnoreCase(email)) {
@@ -227,7 +244,7 @@ public class Main {
         }
     }
 
-    // Admin escolhe um usuário para visualizar e avaliar os carros.
+    // funcao busca usarios e seus carros ao admin para avaliacao
     private static void selecionarUsuarioParaAvaliar() {
         mostrarCabecalho("SELECIONAR USUÁRIO PARA AVALIAR CARROS");
 
@@ -236,11 +253,10 @@ public class Main {
             return;
         }
 
-        // Lista todos os usuários com a quantidade de carros cadastrados.
         for (int i = 0; i < usuarios.size(); i++) {
             Usuario u = usuarios.get(i);
             int qtdCarros = getVeiculosDoUsuario(u.getEmail()).size();
-            System.out.printf("%d. %s (%s) — %d carro(s)%n",
+            System.out.printf("%d. %s (%s) - %d carro(s)%n",
                     i + 1, u.getNome(), u.getEmail(), qtdCarros);
         }
 
@@ -249,7 +265,8 @@ public class Main {
 
         int escolha = lerInteiro("Selecione o número do usuário: ");
 
-        if (escolha == 0) return;
+        if (escolha == 0)
+            return;
 
         if (escolha < 1 || escolha > usuarios.size()) {
             System.out.println("Número inválido.");
@@ -259,7 +276,7 @@ public class Main {
         menuAvaliacaoCarros(usuarios.get(escolha - 1));
     }
 
-    // Exibe os carros de um usuário e permite ao admin selecionar um para avaliar.
+    // funcao montagem da exibicao dos usarios e seus carros ao admin para avalia
     private static void menuAvaliacaoCarros(Usuario usuario) {
         while (true) {
             mostrarCabecalho("CARROS DE " + usuario.getNome().toUpperCase());
@@ -271,11 +288,11 @@ public class Main {
                 return;
             }
 
-            // Exibe lista de carros com status de avaliação e detalhes da avaliação se já avaliado.
             for (int i = 0; i < carros.size(); i++) {
                 Veiculo v = carros.get(i);
                 if (v.isAvaliado()) {
-                    System.out.printf("%d. %s | %s | %d | [AVALIADO] | Valor Usuário: R$ %s | Valor Avaliado: R$ %s | Raridade: %s%n",
+                    System.out.printf(
+                            "%d. %s | %s | %d | [AVALIADO] | Valor Usuário: R$ %s | Valor Avaliado: R$ %s | Raridade: %s%n",
                             i + 1, v.getNome(), v.getMarca(), v.getAnoFabricacao(),
                             v.getValorFormatado(), v.getValorAvaliadoFormatado(), v.getRaridade());
                 } else {
@@ -290,7 +307,8 @@ public class Main {
 
             int escolha = lerInteiro("Selecione um carro para avaliar: ");
 
-            if (escolha == 0) return;
+            if (escolha == 0)
+                return;
 
             if (escolha < 1 || escolha > carros.size()) {
                 System.out.println("Número inválido. Tente novamente.");
@@ -301,7 +319,7 @@ public class Main {
         }
     }
 
-    // Admin define o valor avaliado e a raridade de um veículo.
+    // funcao validacao da captura de valor do carro pelo admin
     private static void avaliarVeiculo(Veiculo veiculo) {
         mostrarCabecalho("AVALIAÇÃO DO VEÍCULO");
         exibirDetalhesVeiculo(veiculo);
@@ -311,7 +329,6 @@ public class Main {
         BigDecimal valorAvaliado = lerValorValido("Valor avaliado em R$ (use ponto, ex: 250000.00): ");
         String raridade = lerRaridade();
 
-        // Grava a avaliação diretamente no objeto Veiculo.
         veiculo.setValorAvaliado(valorAvaliado);
         veiculo.setRaridade(raridade);
 
@@ -322,7 +339,7 @@ public class Main {
         System.out.println("-".repeat(50));
     }
 
-    // Lê a raridade escolhida pelo admin (Comum, Raro ou Lendário).
+    // funcao ler raridade
     private static String lerRaridade() {
         while (true) {
             System.out.println("Nível de raridade:");
@@ -332,19 +349,19 @@ public class Main {
             int opcao = lerInteiro("Escolha o nível: ");
 
             switch (opcao) {
-                case 1: return "Comum";
-                case 2: return "Raro";
-                case 3: return "Lendário";
-                default: System.out.println("Opção inválida. Escolha 1, 2 ou 3.");
+                case 1:
+                    return "Comum";
+                case 2:
+                    return "Raro";
+                case 3:
+                    return "Lendário";
+                default:
+                    System.out.println("Opção inválida. Escolha 1, 2 ou 3.");
             }
         }
     }
 
-    // =========================================================================
-    // MENU DO USUÁRIO COMUM
-    // =========================================================================
-
-    // Exibe o menu do usuário e processa as opções escolhidas.
+    // funcao redirecionamento menu usuario
     private static void menuUsuario(Usuario usuario) {
         int opcao;
 
@@ -376,7 +393,7 @@ public class Main {
         } while (opcao != 5);
     }
 
-    // Exibe o cabeçalho do menu do usuário.
+    // funcao de exibicao do menu usario
     private static void mostrarMenuUsuario() {
         mostrarCabecalho("SISTEMA DE CADASTRO DE VEÍCULOS");
         System.out.println("1. Cadastrar novo veículo");
@@ -387,17 +404,16 @@ public class Main {
         System.out.println("=".repeat(50));
     }
 
-    // Cadastra um novo veículo vinculado ao usuário logado.
+    // funcao cadastro de veiculo
     private static void cadastrarVeiculo(Usuario usuario) {
         mostrarCabecalho("CADASTRO DE NOVO VEÍCULO");
 
-        String nome     = lerTextoObrigatorio("Digite o nome do carro: ");
-        String marca    = lerTextoObrigatorio("Digite a marca: ");
-        int ano         = lerAnoValido("Digite o ano de fabricação: ");
+        String nome = lerTextoObrigatorio("Digite o nome do carro: ");
+        String marca = lerTextoObrigatorio("Digite a marca: ");
+        int ano = lerAnoValido("Digite o ano de fabricação: ");
         BigDecimal valor = lerValorValido("Digite o valor do veículo (use ponto, ex: 45000.99): ");
         String detalhes = lerTextoOpcional("Digite os detalhes técnicos (ou Enter para pular): ");
 
-        // O veículo é criado com o e-mail do usuário como identificador de dono.
         Veiculo veiculo = new Veiculo(nome, marca, ano, valor, detalhes, usuario.getEmail());
         veiculos.add(veiculo);
 
@@ -405,7 +421,7 @@ public class Main {
         exibirDetalhesVeiculo(veiculo);
     }
 
-    // Lista os veículos do usuário logado e permite editar ou deletar.
+    // funcao busca e listagem de veiculos cadastrados
     private static void listarVeiculos(Usuario usuario) {
         while (true) {
             mostrarCabecalho("MEUS VEÍCULOS CADASTRADOS");
@@ -434,7 +450,8 @@ public class Main {
 
             int escolha = lerInteiro("Selecione o número do veículo para gerenciar: ");
 
-            if (escolha == 0) return;
+            if (escolha == 0)
+                return;
 
             if (escolha < 1 || escolha > meusCarros.size()) {
                 System.out.println("Erro: número de veículo inválido.");
@@ -445,7 +462,7 @@ public class Main {
         }
     }
 
-    // Exibe apenas os veículos avaliados do usuário e seus detalhes.
+    // funcao exibicao de veiculos cadastrados do usuario
     private static void visualizarVeiculosAvaliados(Usuario usuario) {
         while (true) {
             mostrarCabecalho("MEUS VEÍCULOS AVALIADOS");
@@ -481,7 +498,8 @@ public class Main {
 
             int escolha = lerInteiro("Selecione o número do veículo para ver detalhes completos da avaliação: ");
 
-            if (escolha == 0) return;
+            if (escolha == 0)
+                return;
 
             if (escolha < 1 || escolha > carrosAvaliados.size()) {
                 System.out.println("Erro: número de veículo inválido.");
@@ -493,7 +511,7 @@ public class Main {
         }
     }
 
-    // Exibe detalhes específicos da avaliação do veículo.
+    // funcao exibicaodetalhes avaliacao veiculo
     private static void mostrarDetalhesAvaliacao(Veiculo veiculo) {
         mostrarCabecalho("DETALHES DA AVALIAÇÃO");
         System.out.println("Veículo         : " + veiculo.getNome() + " (" + veiculo.getMarca() + ")");
@@ -508,7 +526,7 @@ public class Main {
         scanner.nextLine();
     }
 
-    // Exibe o submenu de gerenciamento de um veículo específico.
+    // funcao exibicao menu de acoes de veiculos cadastrados usuarios
     private static void gerenciarVeiculo(Veiculo veiculo) {
         while (true) {
             mostrarCabecalho("GERENCIAR VEÍCULO");
@@ -524,10 +542,10 @@ public class Main {
             switch (opcao) {
                 case 1:
                     deletarVeiculo(veiculo);
-                    return; // Volta para a listagem atualizada.
+                    return;
                 case 2:
                     editarVeiculo(veiculo);
-                    return; // Volta para a listagem atualizada.
+                    return;
                 case 3:
                     return;
                 default:
@@ -536,7 +554,7 @@ public class Main {
         }
     }
 
-    // Remove um veículo da lista global após confirmação.
+    // remove veiuclo da class
     private static void deletarVeiculo(Veiculo veiculo) {
         System.out.print("Tem certeza que deseja deletar \"" + veiculo.getNome() + "\"? (s/n): ");
         String confirmacao = scanner.nextLine().trim().toLowerCase();
@@ -549,16 +567,15 @@ public class Main {
         }
     }
 
-    // Edita os dados básicos de um veículo.
-    // Pressionar Enter mantém o valor atual do campo.
+    // funcao leitura e gravacao de dados editados veiculo cadastrado
     private static void editarVeiculo(Veiculo veiculo) {
         mostrarCabecalho("EDIÇÃO DE VEÍCULO");
         System.out.println("Pressione Enter sem digitar nada para manter o valor atual.");
         System.out.println("-".repeat(50));
 
-        String novoNome     = lerTextoEdicao("Nome do carro", veiculo.getNome());
-        String novaMarca    = lerTextoEdicao("Marca", veiculo.getMarca());
-        int novoAno         = lerAnoEdicao("Ano de fabricação", veiculo.getAnoFabricacao());
+        String novoNome = lerTextoEdicao("Nome do carro", veiculo.getNome());
+        String novaMarca = lerTextoEdicao("Marca", veiculo.getMarca());
+        int novoAno = lerAnoEdicao("Ano de fabricação", veiculo.getAnoFabricacao());
         BigDecimal novoValor = lerValorEdicao("Valor", veiculo.getValor());
         String novosDetalhes = lerTextoEdicao("Detalhes técnicos", veiculo.getDetalhesTecnicos());
 
@@ -574,7 +591,7 @@ public class Main {
         exibirDetalhesVeiculo(veiculo);
     }
 
-    // Exibe todos os dados de um veículo, incluindo avaliação do admin se existir.
+    // funcao exibicao dados de veiculos cadastrados usuarios
     private static void exibirDetalhesVeiculo(Veiculo veiculo) {
         System.out.println("Nome do carro   : " + veiculo.getNome());
         System.out.println("Marca           : " + veiculo.getMarca());
@@ -582,7 +599,6 @@ public class Main {
         System.out.println("Valor cadastrado: R$ " + veiculo.getValorFormatado());
         System.out.println("Detalhes        : " + veiculo.getDetalhesTecnicos());
 
-        // Exibe os dados de avaliação do administrador, se já houver.
         if (veiculo.isAvaliado()) {
             System.out.println("--- Avaliação do Administrador ---");
             System.out.println("Valor avaliado  : R$ " + veiculo.getValorAvaliadoFormatado());
@@ -594,11 +610,7 @@ public class Main {
         System.out.println("-".repeat(50));
     }
 
-    // =========================================================================
-    // FILTROS DE VEÍCULOS (menu do usuário)
-    // =========================================================================
-
-    // Exibe o submenu de filtros para os veículos do usuário logado.
+    // funcao exibicao menu de filtros de ordem carros cadastrados usuarios
     private static void menuFiltro(Usuario usuario) {
         ArrayList<Veiculo> meusCarros = getVeiculosDoUsuario(usuario.getEmail());
 
@@ -617,7 +629,6 @@ public class Main {
 
             int opcao = lerInteiro("Escolha uma opção: ");
 
-            // Atualiza a lista antes de filtrar (pode ter sido editada).
             meusCarros = getVeiculosDoUsuario(usuario.getEmail());
 
             switch (opcao) {
@@ -635,12 +646,11 @@ public class Main {
         }
     }
 
-    // Encontra e exibe o carro de maior valor na lista fornecida.
+    // funcao logica busca de carro mais caro da lista
     private static void filtrarCarroMaisCaro(ArrayList<Veiculo> lista) {
         Veiculo maisCaro = lista.get(0);
 
         for (Veiculo v : lista) {
-            // compareTo retorna > 0 se o valor for maior que o do carro atual.
             if (v.getValor().compareTo(maisCaro.getValor()) > 0) {
                 maisCaro = v;
             }
@@ -650,7 +660,7 @@ public class Main {
         exibirDetalhesVeiculo(maisCaro);
     }
 
-    // Encontra e exibe o carro mais antigo (menor ano) na lista fornecida.
+    // funcao logica busca de carro mais antigo da lista
     private static void filtrarCarroMaisAntigo(ArrayList<Veiculo> lista) {
         Veiculo maisAntigo = lista.get(0);
 
@@ -664,30 +674,27 @@ public class Main {
         exibirDetalhesVeiculo(maisAntigo);
     }
 
-    // =========================================================================
-    // UTILITÁRIOS — LEITURA DE DADOS
-    // =========================================================================
-
-    // Lê um texto obrigatório (não pode estar vazio).
+    // funcao casos de obrigatoriedade de espaco nao em branco
     private static String lerTextoObrigatorio(String mensagem) {
         while (true) {
             System.out.print(mensagem);
             String texto = scanner.nextLine().trim();
 
-            if (!texto.isEmpty()) return texto;
+            if (!texto.isEmpty())
+                return texto;
 
             System.out.println("Erro: este campo não pode ficar vazio.");
         }
     }
 
-    // Lê um texto opcional (pode estar vazio; retorna "Não informado" nesse caso).
+    // funcao descobrir se campo a ser exibido esta vazio ou nao
     private static String lerTextoOpcional(String mensagem) {
         System.out.print(mensagem);
         String texto = scanner.nextLine().trim();
         return texto.isEmpty() ? "Não informado" : texto;
     }
 
-    // Lê um número inteiro, repetindo até receber entrada válida.
+    // funcao loop ate ler numero inteiro valido
     private static int lerInteiro(String mensagem) {
         while (true) {
             System.out.print(mensagem);
@@ -701,7 +708,7 @@ public class Main {
         }
     }
 
-    // Valida o ano de fabricação (entre 1886 e o ano atual).
+    // valida ano de fabricacap da lata
     private static int lerAnoValido(String mensagem) {
         int anoAtual = Year.now().getValue();
 
@@ -724,7 +731,7 @@ public class Main {
         }
     }
 
-    // Valida o valor monetário (não aceita vírgula, aceita ponto como decimal).
+    // valida o valor reias
     private static BigDecimal lerValorValido(String mensagem) {
         while (true) {
             System.out.print(mensagem);
@@ -755,14 +762,14 @@ public class Main {
         }
     }
 
-    // Lê texto durante a edição. Enter mantém o valor atual.
+    // funcao busca de informacao de marca em caso de edicao
     private static String lerTextoEdicao(String campo, String valorAtual) {
         System.out.print(campo + " atual [" + valorAtual + "] - novo valor: ");
         String entrada = scanner.nextLine().trim();
         return entrada.isEmpty() ? valorAtual : entrada;
     }
 
-    // Lê o ano durante a edição. Enter mantém o valor atual.
+    // funcao busca de informacao de ano em caso de edicao
     private static int lerAnoEdicao(String campo, int valorAtual) {
         int anoAtual = Year.now().getValue();
 
@@ -770,7 +777,8 @@ public class Main {
             System.out.print(campo + " atual [" + valorAtual + "] - novo valor: ");
             String entrada = scanner.nextLine().trim();
 
-            if (entrada.isEmpty()) return valorAtual;
+            if (entrada.isEmpty())
+                return valorAtual;
 
             try {
                 int ano = Integer.parseInt(entrada);
@@ -787,13 +795,14 @@ public class Main {
         }
     }
 
-    // Lê o valor monetário durante a edição. Enter mantém o valor atual.
+    // funcao busca de informacao de valor em caso de edicao
     private static BigDecimal lerValorEdicao(String campo, BigDecimal valorAtual) {
         while (true) {
             System.out.print(campo + " atual [R$ " + valorAtual.toPlainString() + "] - novo valor: ");
             String entrada = scanner.nextLine().trim();
 
-            if (entrada.isEmpty()) return valorAtual;
+            if (entrada.isEmpty())
+                return valorAtual;
 
             if (entrada.contains(",")) {
                 System.out.println("Erro: use ponto em vez de vírgula. Exemplo: 45000.99");
@@ -820,11 +829,7 @@ public class Main {
         }
     }
 
-    // =========================================================================
-    // UTILITÁRIOS — EXIBIÇÃO E FILTRAGEM
-    // =========================================================================
-
-    // Exibe um cabeçalho visual para organizar o terminal.
+    // funcao UI (laterais) da tela
     private static void mostrarCabecalho(String titulo) {
         System.out.println();
         System.out.println("=".repeat(50));
@@ -832,7 +837,7 @@ public class Main {
         System.out.println("=".repeat(50));
     }
 
-    // Retorna a lista de veículos pertencentes a um determinado usuário.
+    // Retorna a lista de veículos por admin e usario
     private static ArrayList<Veiculo> getVeiculosDoUsuario(String emailUsuario) {
         ArrayList<Veiculo> resultado = new ArrayList<>();
         for (Veiculo v : veiculos) {
