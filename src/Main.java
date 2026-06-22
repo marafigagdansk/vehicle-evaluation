@@ -148,8 +148,8 @@ public class Main {
         System.out.println("Por segurança, você deve alterar a senha provisória do seu primeiro acesso.");
 
         while (true) {
-            String novaSenha = lerTextoObrigatorio("Digite sua nova senha: ");
-            String confirmacao = lerTextoObrigatorio("Confirme sua nova senha: ");
+            String novaSenha = lerTextoObrigatorio("Digite sua nova senha: ", 32);
+            String confirmacao = lerTextoObrigatorio("Confirme sua nova senha: ", 32);
 
             if (novaSenha.equals(confirmacao)) {
                 usuario.setSenha(novaSenha);
@@ -201,9 +201,9 @@ public class Main {
     private static void cadastrarUsuario() {
         mostrarCabecalho("CADASTRO DE NOVO USUÁRIO");
 
-        String nome = lerTextoObrigatorio("Nome: ");
-        String email = lerEmailValido("E-mail: ");
-        String senha = lerTextoObrigatorio("Senha: ");
+        String nome = lerTextoObrigatorio("Nome: ", 100);
+        String email = lerEmailValido("E-mail: ", 100);
+        String senha = lerTextoObrigatorio("Senha: ", 32);
 
         usuarios.add(new Usuario(nome, email, senha));
 
@@ -212,13 +212,17 @@ public class Main {
     }
 
     // funcao validacao e mascara email
-    private static String lerEmailValido(String mensagem) {
+    private static String lerEmailValido(String mensagem, int maxCaracteres) {
         while (true) {
             System.out.print(mensagem);
             String email = scanner.nextLine().trim();
 
             if (email.isEmpty()) {
                 System.out.println("Erro: o e-mail não pode ficar vazio.");
+                continue;
+            }
+
+            if (!validarLimiteCaracteres(email, maxCaracteres)) {
                 continue;
             }
 
@@ -326,7 +330,7 @@ public class Main {
 
         System.out.println("--- Definir Avaliação ---");
 
-        BigDecimal valorAvaliado = lerValorValido("Valor avaliado em R$ (use ponto, ex: 250000.00): ");
+        BigDecimal valorAvaliado = lerValorValido("Valor avaliado em R$ (use ponto, ex: 250000.00): ", 15);
         String raridade = lerRaridade();
 
         veiculo.setValorAvaliado(valorAvaliado);
@@ -408,11 +412,11 @@ public class Main {
     private static void cadastrarVeiculo(Usuario usuario) {
         mostrarCabecalho("CADASTRO DE NOVO VEÍCULO");
 
-        String nome = lerTextoObrigatorio("Digite o nome do carro: ");
-        String marca = lerTextoObrigatorio("Digite a marca: ");
+        String nome = lerTextoObrigatorio("Digite o nome do carro: ", 50);
+        String marca = lerTextoObrigatorio("Digite a marca: ", 50);
         int ano = lerAnoValido("Digite o ano de fabricação: ");
-        BigDecimal valor = lerValorValido("Digite o valor do veículo (use ponto, ex: 45000.99): ");
-        String detalhes = lerTextoOpcional("Digite os detalhes técnicos (ou Enter para pular): ");
+        BigDecimal valor = lerValorValido("Digite o valor do veículo (use ponto, ex: 45000.99): ", 15);
+        String detalhes = lerTextoOpcional("Digite os detalhes técnicos (ou Enter para pular): ", 500);
 
         Veiculo veiculo = new Veiculo(nome, marca, ano, valor, detalhes, usuario.getEmail());
         veiculos.add(veiculo);
@@ -573,11 +577,11 @@ public class Main {
         System.out.println("Pressione Enter sem digitar nada para manter o valor atual.");
         System.out.println("-".repeat(50));
 
-        String novoNome = lerTextoEdicao("Nome do carro", veiculo.getNome());
-        String novaMarca = lerTextoEdicao("Marca", veiculo.getMarca());
+        String novoNome = lerTextoEdicao("Nome do carro", veiculo.getNome(), 50);
+        String novaMarca = lerTextoEdicao("Marca", veiculo.getMarca(), 50);
         int novoAno = lerAnoEdicao("Ano de fabricação", veiculo.getAnoFabricacao());
-        BigDecimal novoValor = lerValorEdicao("Valor", veiculo.getValor());
-        String novosDetalhes = lerTextoEdicao("Detalhes técnicos", veiculo.getDetalhesTecnicos());
+        BigDecimal novoValor = lerValorEdicao("Valor", veiculo.getValor(), 15);
+        String novosDetalhes = lerTextoEdicao("Detalhes técnicos", veiculo.getDetalhesTecnicos(), 500);
 
         veiculo.setNome(novoNome);
         veiculo.setMarca(novaMarca);
@@ -674,24 +678,44 @@ public class Main {
         exibirDetalhesVeiculo(maisAntigo);
     }
 
-    // funcao casos de obrigatoriedade de espaco nao em branco
-    private static String lerTextoObrigatorio(String mensagem) {
+    // funcao que valida se o texto possui o limite maximo de caracteres
+    private static boolean validarLimiteCaracteres(String texto, int limiteMaximo) {
+        if (texto.length() > limiteMaximo) {
+            System.out.println("Erro: o limite máximo é de " + limiteMaximo + " caracteres. Você digitou " + texto.length() + ".");
+            return false;
+        }
+        return true;
+    }
+
+    // funcao casos de obrigatoriedade de espaco nao em branco com limite
+    private static String lerTextoObrigatorio(String mensagem, int maxCaracteres) {
         while (true) {
             System.out.print(mensagem);
             String texto = scanner.nextLine().trim();
 
-            if (!texto.isEmpty())
-                return texto;
+            if (texto.isEmpty()) {
+                System.out.println("Erro: este campo não pode ficar vazio.");
+                continue;
+            }
 
-            System.out.println("Erro: este campo não pode ficar vazio.");
+            if (validarLimiteCaracteres(texto, maxCaracteres)) {
+                return texto;
+            }
         }
     }
 
-    // funcao descobrir se campo a ser exibido esta vazio ou nao
-    private static String lerTextoOpcional(String mensagem) {
-        System.out.print(mensagem);
-        String texto = scanner.nextLine().trim();
-        return texto.isEmpty() ? "Não informado" : texto;
+    // funcao descobrir se campo a ser exibido esta vazio ou nao com limite
+    private static String lerTextoOpcional(String mensagem, int maxCaracteres) {
+        while (true) {
+            System.out.print(mensagem);
+            String texto = scanner.nextLine().trim();
+            if (texto.isEmpty()) {
+                return "Não informado";
+            }
+            if (validarLimiteCaracteres(texto, maxCaracteres)) {
+                return texto;
+            }
+        }
     }
 
     // funcao loop ate ler numero inteiro valido
@@ -731,11 +755,20 @@ public class Main {
         }
     }
 
-    // valida o valor reias
-    private static BigDecimal lerValorValido(String mensagem) {
+    // valida o valor reias com limite
+    private static BigDecimal lerValorValido(String mensagem, int maxCaracteres) {
         while (true) {
             System.out.print(mensagem);
             String entrada = scanner.nextLine().trim();
+
+            if (entrada.isEmpty()) {
+                System.out.println("Erro: o valor não pode ficar vazio.");
+                continue;
+            }
+
+            if (!validarLimiteCaracteres(entrada, maxCaracteres)) {
+                continue;
+            }
 
             if (entrada.contains(",")) {
                 System.out.println("Erro: use ponto em vez de vírgula. Exemplo: 45000.99");
@@ -762,11 +795,19 @@ public class Main {
         }
     }
 
-    // funcao busca de informacao de marca em caso de edicao
-    private static String lerTextoEdicao(String campo, String valorAtual) {
-        System.out.print(campo + " atual [" + valorAtual + "] - novo valor: ");
-        String entrada = scanner.nextLine().trim();
-        return entrada.isEmpty() ? valorAtual : entrada;
+    // funcao busca de informacao de marca em caso de edicao com limite
+    private static String lerTextoEdicao(String campo, String valorAtual, int maxCaracteres) {
+        while (true) {
+            System.out.print(campo + " atual [" + valorAtual + "] - novo valor: ");
+            String entrada = scanner.nextLine().trim();
+
+            if (entrada.isEmpty())
+                return valorAtual;
+
+            if (validarLimiteCaracteres(entrada, maxCaracteres)) {
+                return entrada;
+            }
+        }
     }
 
     // funcao busca de informacao de ano em caso de edicao
@@ -795,14 +836,18 @@ public class Main {
         }
     }
 
-    // funcao busca de informacao de valor em caso de edicao
-    private static BigDecimal lerValorEdicao(String campo, BigDecimal valorAtual) {
+    // funcao busca de informacao de valor em caso de edicao com limite
+    private static BigDecimal lerValorEdicao(String campo, BigDecimal valorAtual, int maxCaracteres) {
         while (true) {
             System.out.print(campo + " atual [R$ " + valorAtual.toPlainString() + "] - novo valor: ");
             String entrada = scanner.nextLine().trim();
 
             if (entrada.isEmpty())
                 return valorAtual;
+
+            if (!validarLimiteCaracteres(entrada, maxCaracteres)) {
+                continue;
+            }
 
             if (entrada.contains(",")) {
                 System.out.println("Erro: use ponto em vez de vírgula. Exemplo: 45000.99");
