@@ -5,7 +5,7 @@ public class Usuario {
     private String senha;
     private boolean primeiroLogin;
 
-    // Construtor: cria um usuário com nome, e-mail e senha.
+    // cria usario e suas info
     public Usuario(String nome, String email, String senha) {
         this.nome = nome;
         this.email = email;

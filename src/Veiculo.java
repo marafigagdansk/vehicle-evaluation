@@ -12,9 +12,9 @@ public class Veiculo {
     private BigDecimal valorAvaliado;
     private String raridade;
 
-    // Construtor: cria um veículo com os dados básicos e vincula ao usuário dono.
+    // funcao contruir veiculo e suas info
     public Veiculo(String nome, String marca, int anoFabricacao,
-                   BigDecimal valor, String detalhesTecnicos, String emailUsuario) {
+            BigDecimal valor, String detalhesTecnicos, String emailUsuario) {
         this.nome = nome;
         this.marca = marca;
         this.anoFabricacao = anoFabricacao;
@@ -85,19 +85,20 @@ public class Veiculo {
         this.raridade = raridade;
     }
 
-    // Retorna true se o veículo já foi avaliado pelo administrador.
+    // funcao retorna true caso tenha avaliacao
     public boolean isAvaliado() {
         return valorAvaliado != null && raridade != null;
     }
 
-    // Método auxiliar para exibir o valor cadastrado com 2 casas decimais.
+    // funcao retorna o valor formatado em reais
     public String getValorFormatado() {
         return valor.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 
-    // Método auxiliar para exibir o valor da avaliação com 2 casas decimais.
+    // funcao retorna valor avaliado formatado em reais
     public String getValorAvaliadoFormatado() {
-        if (valorAvaliado == null) return "N/A";
+        if (valorAvaliado == null)
+            return "N/A";
         return valorAvaliado.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 }
