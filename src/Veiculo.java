@@ -3,6 +3,7 @@ import java.math.RoundingMode;
 
 public class Veiculo {
 
+    private int id;
     private String nome;
     private String marca;
     private int anoFabricacao;
@@ -12,9 +13,10 @@ public class Veiculo {
     private BigDecimal valorAvaliado;
     private String raridade;
 
-    // funcao contruir veiculo e suas info
+    // funcao contruir veiculo e suas info (novo, sem id ainda)
     public Veiculo(String nome, String marca, int anoFabricacao,
             BigDecimal valor, String detalhesTecnicos, String emailUsuario) {
+        this.id = 0;
         this.nome = nome;
         this.marca = marca;
         this.anoFabricacao = anoFabricacao;
@@ -23,6 +25,29 @@ public class Veiculo {
         this.emailUsuario = emailUsuario;
         this.valorAvaliado = null;
         this.raridade = null;
+    }
+
+    // funcao contruir veiculo carregado do banco (com id)
+    public Veiculo(int id, String nome, String marca, int anoFabricacao,
+            BigDecimal valor, String detalhesTecnicos, String emailUsuario,
+            BigDecimal valorAvaliado, String raridade) {
+        this.id = id;
+        this.nome = nome;
+        this.marca = marca;
+        this.anoFabricacao = anoFabricacao;
+        this.valor = valor;
+        this.detalhesTecnicos = detalhesTecnicos;
+        this.emailUsuario = emailUsuario;
+        this.valorAvaliado = valorAvaliado;
+        this.raridade = raridade;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNome() {

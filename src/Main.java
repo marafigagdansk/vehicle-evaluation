@@ -13,6 +13,11 @@ public class Main {
     private static final int MAX_TENTATIVAS_LOGIN = 3;
 
     public static void main(String[] args) {
+        // Inicializa o banco de dados e carrega os dados na memória
+        Database.inicializar();
+        usuarios.addAll(Database.listarUsuarios());
+        veiculos.addAll(Database.listarTodosVeiculos());
+
         int opcao;
 
         do {
@@ -37,6 +42,7 @@ public class Main {
         } while (opcao != 3);
 
         scanner.close();
+        Database.fechar();
     }
 
     // Tela Inicial cabecalho
@@ -154,7 +160,9 @@ public class Main {
             if (novaSenha.equals(confirmacao)) {
                 usuario.setSenha(novaSenha);
                 usuario.setPrimeiroLogin(false);
-                System.out.println("Senha updated com sucesso!");
+                // Persiste a nova senha no banco
+                Database.atualizarSenhaUsuario(usuario);
+                System.out.println("Senha atualizada com sucesso!");
                 break;
             } else {
                 System.out.println("Erro: as senhas digitadas não coincidem. Tente novamente.");
@@ -205,7 +213,11 @@ public class Main {
         String email = lerEmailValido("E-mail: ", 100);
         String senha = lerTextoObrigatorio("Senha: ", 32);
 
-        usuarios.add(new Usuario(nome, email, senha));
+        Usuario novoUsuario = new Usuario(nome, email, senha);
+        // Persiste no banco e recebe o id gerado
+        Database.inserirUsuario(novoUsuario);
+        // Adiciona na lista em memória
+        usuarios.add(novoUsuario);
 
         System.out.println("Usuário \"" + nome + "\" cadastrado com sucesso!");
         System.out.println("E-mail: " + email);
@@ -231,15 +243,8 @@ public class Main {
                 continue;
             }
 
-            boolean emUso = false;
-            for (Usuario u : usuarios) {
-                if (u.getEmail().equalsIgnoreCase(email)) {
-                    emUso = true;
-                    break;
-                }
-            }
-
-            if (emUso) {
+            // Verifica duplicata diretamente no banco
+            if (Database.emailJaCadastrado(email)) {
                 System.out.println("Erro: já existe um usuário cadastrado com esse e-mail.");
                 continue;
             }
@@ -335,6 +340,8 @@ public class Main {
 
         veiculo.setValorAvaliado(valorAvaliado);
         veiculo.setRaridade(raridade);
+        // Persiste a avaliação no banco
+        Database.salvarAvaliacao(veiculo);
 
         mostrarCabecalho("AVALIAÇÃO REGISTRADA COM SUCESSO");
         System.out.println("Veículo   : " + veiculo.getNome());
@@ -419,6 +426,9 @@ public class Main {
         String detalhes = lerTextoOpcional("Digite os detalhes técnicos (ou Enter para pular): ", 500);
 
         Veiculo veiculo = new Veiculo(nome, marca, ano, valor, detalhes, usuario.getEmail());
+        // Persiste no banco e recebe o id gerado
+        Database.inserirVeiculo(veiculo);
+        // Adiciona na lista em memória
         veiculos.add(veiculo);
 
         mostrarCabecalho("VEÍCULO CADASTRADO COM SUCESSO");
@@ -558,12 +568,15 @@ public class Main {
         }
     }
 
-    // remove veiuclo da class
+    // remove veiuclo da lista em memoria e do banco
     private static void deletarVeiculo(Veiculo veiculo) {
         System.out.print("Tem certeza que deseja deletar \"" + veiculo.getNome() + "\"? (s/n): ");
         String confirmacao = scanner.nextLine().trim().toLowerCase();
 
         if (confirmacao.equals("s")) {
+            // Remove do banco de dados
+            Database.deletarVeiculo(veiculo);
+            // Remove da lista em memória
             veiculos.remove(veiculo);
             System.out.println("Veículo deletado com sucesso.");
         } else {
@@ -588,6 +601,9 @@ public class Main {
         veiculo.setAnoFabricacao(novoAno);
         veiculo.setValor(novoValor);
         veiculo.setDetalhesTecnicos(novosDetalhes);
+
+        // Persiste as edições no banco
+        Database.atualizarVeiculo(veiculo);
 
         System.out.println("Veículo editado com sucesso.");
 
@@ -882,7 +898,7 @@ public class Main {
         System.out.println("=".repeat(50));
     }
 
-    // Retorna a lista de veículos por admin e usario
+    // Retorna a lista de veículos por admin e usario (a partir da lista em memória)
     private static ArrayList<Veiculo> getVeiculosDoUsuario(String emailUsuario) {
         ArrayList<Veiculo> resultado = new ArrayList<>();
         for (Veiculo v : veiculos) {
